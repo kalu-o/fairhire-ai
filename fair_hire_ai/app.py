@@ -5,20 +5,18 @@ and another for scoring the transcription for fairness.
 import argparse
 import logging
 import os
+import tempfile
+from io import BytesIO
 from typing import List, Tuple
 
-
+import httpx
+import requests
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import requests
-from io import BytesIO
-import tempfile
-import uvicorn
-import os
-import httpx
-from .ai_utils import score_transcript
 
+from .ai_utils import score_transcript
 
 app = FastAPI()
 
