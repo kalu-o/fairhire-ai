@@ -1,4 +1,6 @@
-"""This defines a single chat endpoint and the entry point of the service.
+"""This script defines the Fair Hire AI Service, a FastAPI-based application that processes audio interview transcripts 
+to evaluate fairness and bias. The service exposes two main endpoints: one for transcribing audio files from a URL 
+and another for scoring the transcription for fairness.
 """
 import argparse
 import logging
@@ -16,7 +18,6 @@ import uvicorn
 import os
 import httpx
 from .ai_utils import score_transcript
-
 
 
 app = FastAPI()
@@ -47,12 +48,24 @@ headers = {
 }
 
 class AudioURLRequest(BaseModel):
+    """Defines the request model for receiving audio file URL and position title 
+        in the API request payload.
+    """
     audio_url: str
     interview_position: str
 
 
 @app.post("/transcribe_audio")
 async def transcribe_audio(request: AudioURLRequest):
+    """Receives an audio file URL, downloads the audio, and transcribes it to text 
+        using the OpenAI API.
+
+    Args:
+        request: the API request payload
+
+    Returns:
+        The transcription as json
+    """
     try:
         # Fetch audio file from the provided URL
         audio_response = requests.get(request.audio_url)
@@ -86,6 +99,15 @@ async def transcribe_audio(request: AudioURLRequest):
 
 @app.post("/score")
 async def score(request: AudioURLRequest):
+    """For scoring the transcription for fairness.
+
+    Args:
+        request: the API request payload
+
+    Returns:
+        The score and explaination as json
+    """
+
     try:
         # Call the transcribe_audio endpoint
         logging.info(request.audio_url)
