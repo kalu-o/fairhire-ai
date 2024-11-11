@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Adriana, the Fair Hire AI</title>
+      <style>
+         /* Styling code here */
+         body {
+         font-family: Arial, sans-serif;
+         background-color: #f0f0f0;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         height: 100vh;
+         margin: 0;
+         }
+         .container {
+         background-color: white;
+         padding: 20px;
+         border-radius: 10px;
+         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+         width: 300px;
+         }
+         h1, h2 {
+         text-align: center;
+         }
+         button {
+         background-color: #4be6d3;
+         border: none;
+         border-radius: 50px;
+         color: white;
+         cursor: pointer;
+         font-size: 16px;
+         margin-top: 20px;
+         padding: 10px 20px;
+         width: 200px;
+         display: block;
+         margin: auto;
+         transition: background-color 0.3s;
+         }
+         button:hover {
+         background-color: #00b33f;
+         }
+         #recognized-text {
+         background-color: #e9ecef;
+         padding: 10px;
+         border-radius: 5px;
+         min-height: 50px;
+         }
+         .synthesis {
+         background-color: #e9ecef;
+         padding: 10px;
+         border-radius: 5px;
+         min-height: 50px;
+         }
+         .avatar {
+         background-image: url('https://images.unsplash.com/photo-1659018966820-de07c94e0d01?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHwxMHx8Ym90fGVufDB8fHx8MTcyNDE4MjQ4OXww&ixlib=rb-4.0.3&q=80&w=1080');
+         background-size: cover;
+         border-radius: 50%;
+         height: 60px;
+         width: 60px;
+         margin: 0 auto;
+         }
+         .scrollable-text-box {
+         width: 100vw;        /* Full width of the device */
+         max-width: 100%;     /* Ensure it doesn't exceed viewport width */
+         height: 200px;       /* Set the height of the text box */
+         overflow-y: auto;    /* Add vertical scroll if content overflows */
+         padding: 10px;       /* Add padding for readability */
+         border: 1px solid #ccc; /* Optional border for styling */
+         box-sizing: border-box; /* Ensure padding and border are within width */
+         }
+      </style>
+   </head>
+   <body>
+      <div class="container">
+         <div>
+            <h2>Adriana: The Fair Hire AI</h2>
+            <div class="avatar"></div>
+            <div>
+               <p>Select an Interview Option:</p>
+               <label><input type="radio" name="options" value="option1"> Software Engineer</label><br>
+               <label><input type="radio" name="options" value="option2"> Human Resource Manager</label><br>
+               <label><input type="radio" name="options" value="option3"> Applied Scientist</label>
+            </div>
+            <input type="text" id="text-input" placeholder="Enter audio uri here" size="35">
+            <button id="submit-text">Submit</button>
+         </div>
+         <div class="scrollable-text-box">
+            <p id="text-to-speak">Adriana's response</p>
+         </div>
+         <div id="info-label" style="background-color: #e9ecef; padding: 10px; border-radius: 5px; min-height: 10px; margin-top: 10px;">
+            Ready!
+         </div>
+      </div>
+      <script>
+         document.addEventListener('DOMContentLoaded', () => {
+             const textToSpeak = document.getElementById('text-to-speak');
+             const submitButton = document.getElementById('submit-text');
+             const textInput = document.getElementById('text-input');
+             const infoLabel = document.getElementById('info-label');
+             const nluEndPoint = 'https://localhost:8000/score'; //provide a backend endpoint here
+         
+         
+             let femaleVoice;
+         
+             // Load voices and select a preferred female voice
+             window.speechSynthesis.onvoiceschanged = () => {
+                 const voices = window.speechSynthesis.getVoices();
+                 femaleVoice = voices.find(voice => 
+                     (voice.name.includes("Female") || voice.name.includes("UK English Female") || voice.name.includes("Samantha") || 
+                      (voice.lang === "en-US" && voice.gender === "female"))
+                 ) || voices.find(voice => voice.lang === "en-US" && voice.name.includes("Female")) || voices[0];
+             };
+         
+             // Initial speech to introduce Adriana
+             window.addEventListener('load', () => {
+                 synthesizeSpeech("Hello, my name is Adriana, your fair hire AI. Give the link to your recorded interview and I will get back to you on the fairness of the interview.");
+             });
+         
+             // Text Submission to Server
+             submitButton.addEventListener('click', async () => {
+                 const text = textInput.value;
+                 const interviewOption = getSelectedRadioValue();
+                 if (text.trim() === "") {
+                     synthesizeSpeech("No audio URL provided. Please provide it.");
+                     alert("No audio URL provided. Please provide it.");
+                     return;
+                 }
+                 if (text) {
+                     infoLabel.textContent = "Processing, please wait...";
+                     submitButton.disabled = true;
+                     await fetch(nluEndPoint, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({ audio_url: text, interview_position: interviewOption }),
+                     })
+                     .then(response => response.json())
+                     .then(data => {
+                         const responseText = data['ai_response'];
+                         textToSpeak.textContent = responseText;
+                         synthesizeSpeech(responseText);
+                         infoLabel.textContent = "Done!";
+                         submitButton.disabled = false;
+                     })
+                     .catch(error => {
+                         textToSpeak.textContent = `Error occurred in NLU processing: ${error}`;
+                         submitButton.disabled = false;
+                     });
+                 }
+             });
+         
+             // Function to synthesize speech
+             function synthesizeSpeech(text) {
+                 const msg = new SpeechSynthesisUtterance(text);
+                 if (femaleVoice) msg.voice = femaleVoice;  // Set the female voice
+                 msg.lang = 'en-US';
+                 window.speechSynthesis.cancel();  // Cancel ongoing speech
+                 window.speechSynthesis.speak(msg);  // Speak the message
+             }
+         
+             function getSelectedRadioValue() {
+                 const options = document.getElementsByName('options');
+                 let selectedValue = null;
+                 for (const option of options) {
+                     if (option.checked) {
+                         selectedValue = option.value;
+                         break;
+                     }
+                 }
+                 if (!selectedValue) {
+                     synthesizeSpeech("No interview option selected. Please select an option.");
+                     alert("No interview option selected. Please select an option.");
+                     return;
+                 }
+                 return selectedValue;
+             }
+         });
+      </script>
+   </body>
+</html>
