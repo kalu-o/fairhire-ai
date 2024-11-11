@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "fair-hire-ai-service"
+version = "0.1.0-dev"
+description = "An Interview Fairness Scoring and Coach System"
+authors = ["Kalu U. Ogbureke <kalu.ogbureke@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "fair_hire_ai" }]
+
+[tool.poetry.scripts]
+fair_hire_ai_service = "fair_hire_ai.app:start"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.11"
+google-cloud-speech = "^2.17.0"
+google-cloud-texttospeech = "^2.13.1"
+setuptools = "^69.0.3"
+uvicorn = "^0.27.1"
+fastapi = "^0.110.0"
+requests = "^2.31.0"
+Openai = "^1.14.1"
+python-multipart = "^0.0.17"
+google-generativeai = "^0.8.3"
+
+[tool.poetry.dev-dependencies]
+formencode = "^2.0.1"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.0.0"
+pytest-mock = "^3.10.0"
+black = "^22.6.0"
+flake8 = "^4.0.1"
+isort = "^5.10.1"
+pylint = "^2.14.4"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

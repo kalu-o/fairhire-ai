@@ -1,0 +1,15 @@
+version: '3.0'
+services:  
+  fair-hire-ai:
+    container_name: fair-hire-ai
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # api keys read from .env file in the root directory
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      API_KEY: ${API_KEY}
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    
