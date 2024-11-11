@@ -1,6 +1,6 @@
-# Adriana, the Fair Hire AI
+# Adriana: the Fair Hire AI
 
-This project is an interview fairness scoring system leveraging Langchain Google Gemini and Vertex AI. The server component is implemented in Python, encapsulated in a Docker container, and the client/frontend is built using JavaScript/HTML. The service is accessible via port 8000, and the development environment is managed using Poetry.
+This project is an interview fairness scoring system leveraging Google Gemini and Vertex AI. The server component is implemented in Python, encapsulated in a Docker container, and the client/frontend is built using JavaScript/HTML. The service is accessible via port 8000, and the development environment is managed using Poetry.
 
 ## Table of Contents
 
