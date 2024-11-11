@@ -39,23 +39,23 @@ logging.basicConfig(
 logger = logging.getLogger("fair-hire-ai-service")
 logger.info("Initialization done! Agent is ready!")
 
-openai_api_key =  os.environ["OPENAI_API_KEY"]
+openai_api_key = os.environ["OPENAI_API_KEY"]
 
-headers = {
-    "Authorization": f"Bearer {openai_api_key}"
-}
+headers = {"Authorization": f"Bearer {openai_api_key}"}
+
 
 class AudioURLRequest(BaseModel):
-    """Defines the request model for receiving audio file URL and position title 
-        in the API request payload.
+    """Defines the request model for receiving audio file URL and position title
+    in the API request payload.
     """
+
     audio_url: str
     interview_position: str
 
 
 @app.post("/transcribe_audio")
 async def transcribe_audio(request: AudioURLRequest):
-    """Receives an audio file URL, downloads the audio, and transcribes it to text 
+    """Receives an audio file URL, downloads the audio, and transcribes it to text
         using the OpenAI API.
 
     Args:
@@ -72,20 +72,26 @@ async def transcribe_audio(request: AudioURLRequest):
         raise HTTPException(status_code=400, detail=f"Error fetching audio file: {e}")
 
     # Load audio content into a BytesIO object
-    audio_data =  BytesIO(audio_response.content)
-    
+    audio_data = BytesIO(audio_response.content)
+
     # Set up files for OpenAI API request
     files = {
-        'file': ('audio.wav', audio_data, 'audio/wav'),
-        'model': (None, 'whisper-1')
+        "file": ("audio.wav", audio_data, "audio/wav"),
+        "model": (None, "whisper-1"),
     }
-    
+
     try:
         # Send audio data to OpenAI API for transcription
-        response = requests.post("https://api.openai.com/v1/audio/transcriptions", headers=headers, files=files)
+        response = requests.post(
+            "https://api.openai.com/v1/audio/transcriptions",
+            headers=headers,
+            files=files,
+        )
         response.raise_for_status()  # Check for request errors
     except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error with transcription service: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error with transcription service: {e}"
+        )
 
     # Extract transcription text from the response
     json_response = response.json()
@@ -111,15 +117,25 @@ async def score(request: AudioURLRequest):
         logging.info(request.audio_url)
         logging.info(request.interview_position)
         async with httpx.AsyncClient() as client:
-            response = await client.post("http://localhost:8000/transcribe_audio", json={"audio_url": request.audio_url,  "interview_position": request.interview_position})
+            response = await client.post(
+                "http://localhost:8000/transcribe_audio",
+                json={
+                    "audio_url": request.audio_url,
+                    "interview_position": request.interview_position,
+                },
+            )
 
         if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail="Transcription service failed.")
+            raise HTTPException(
+                status_code=response.status_code, detail="Transcription service failed."
+            )
 
         transcription_result = response.json()
-        ai_response = score_transcript(transcription_result["transcription"], request.interview_position)
+        ai_response = score_transcript(
+            transcription_result["transcription"], request.interview_position
+        )
         return {"ai_response": ai_response}
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

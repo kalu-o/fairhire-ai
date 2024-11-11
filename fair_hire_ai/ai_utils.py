@@ -34,11 +34,11 @@ import google.generativeai as genai
 genai.configure(api_key=os.environ["API_KEY"])
 
 generation_config = {
-  "temperature": 0,
-  "top_p": 0.95,
-  "top_k": 64,
-  "max_output_tokens": 8192,
-  "response_mime_type": "text/plain",
+    "temperature": 0,
+    "top_p": 0.95,
+    "top_k": 64,
+    "max_output_tokens": 8192,
+    "response_mime_type": "text/plain",
 }
 
 safety_settings = [
@@ -64,8 +64,9 @@ system_prompt = """You are an expert that analyzes interview transcripts and ass
 for fairness/unbiased (0 very biased and unfair, 1 unbiased and fair). Score the following transcript and 
 explain your decision. """
 
-def score_transcript(transcript: str, position: str)->str:
-    """Analyzes the provided interview transcript for fairness and bias. Generates a fairness score and 
+
+def score_transcript(transcript: str, position: str) -> str:
+    """Analyzes the provided interview transcript for fairness and bias. Generates a fairness score and
         an explanation based on the model's analysis.
 
     Args:
@@ -75,12 +76,22 @@ def score_transcript(transcript: str, position: str)->str:
     Returns:
         A response string containing the fairness score and explanation from the model.
     """
-    model = genai.GenerativeModel(model_name="gemini-1.5-flash",
-            generation_config=generation_config,
-            safety_settings=safety_settings,
-     )
-    
-    prompt = system_prompt + "This interview is for a " + position + " position: " + transcript + "."
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        generation_config=generation_config,
+        safety_settings=safety_settings,
+    )
+
+    prompt = (
+        system_prompt
+        + "This interview is for a "
+        + position
+        + " position: "
+        + transcript
+        + "."
+    )
     prefix = "Your fairness score for this interview is"
     response = model.generate_content(prompt)
-    return prefix + response.text.replace('*', '').replace('#', '').replace('Score:', '')
+    return prefix + response.text.replace("*", "").replace("#", "").replace(
+        "Score:", ""
+    )
